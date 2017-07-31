@@ -3,6 +3,7 @@
 module Main where
 
 import Graphics.Gloss
+import Graphics.Gloss.Interface.IO.Game
 import Data.Monoid
 
 -- | Итем игрового поля.
@@ -13,12 +14,12 @@ data Item = X | O
 type Board = [[Maybe Item]]
 
 -- | Инициализация игрового поля (все ячейки пысты -- Nothing).
-initBoard :: Board
-initBoard = replicate 3 (replicate 3 Nothing)
+initWorld :: Board
+initWorld = replicate 3 (replicate 3 Nothing)
 
 -- | Отрисовка игрового поля.
-drawBoard :: Board -> Picture
-drawBoard board = borders <> items
+renderWorld :: Board -> Picture
+renderWorld board = borders <> items
   where
     -- отрисовка границ
     borders = color black (line [(-30, -90), (-30,  90)]) <>
@@ -32,12 +33,25 @@ drawBoard board = borders <> items
                        O -> color green (thickCircle 1 50)
                      | x <- [0..2], y <- [0..2], Just play <- [(board !! x) !! y ]
                     ]
+
 -- | Хэндлер по нажатию мыши.
--- handleInput :: Event -> Board -> Board
+handleWorld :: Event -> Board -> Board
+handleWorld (EventKey (MouseButton LeftButton) Up _ (x, y)) board = insertPoint board X (snap x, snap y)
+  where
+    snap = (+1) . min 1 . max (-1) . fromIntegral . floor . (/ 60) . (+ 30)
+    -- вставка итема на игровое поле по координатам
+    insertPoint board item (x, y) =
+      take x board ++ [take y (board !! x) ++ [Just item] ++ drop (y + 1) (board !! x)] ++ drop (x + 1) board
+handleWorld _ board = board
 
 -- | Метод, проверяющий победу.
 -- gameIsOver :: Board -> Picture
 
+-- | Обновление мира.
+updateWorld :: Float -> Board -> Board
+updateWorld _  board = board
+
+-- | main.
 main :: IO ()
 main =
   play display bgColor fps initWorld renderWorld handleWorld updateWorld
@@ -45,10 +59,5 @@ main =
     display = InWindow "QQ" winSize winOffset
     bgColor = white
     fps = 60
-
-    initWorld = initBoard
-    renderWorld w = drawBoard initBoard
-    handleWorld _ w = w
-    updateWorld _ w = w
     winSize = (180, 180)
     winOffset = (100, 100)
