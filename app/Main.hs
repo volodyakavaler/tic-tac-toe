@@ -6,6 +6,7 @@ import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game
 import Data.Monoid
 
+-- | Размер игрового поля.
 boardSize :: Int
 boardSize = 3
 
@@ -16,7 +17,7 @@ data Item = X | O
 -- | Игровое поле.
 type Board = [[Maybe Item]]
 
--- | Победитель
+-- | Победитель.
 type Winner = Maybe Item
 
 -- | Инициализация игрового поля (все ячейки пысты -- Nothing).
@@ -59,17 +60,17 @@ handleWorld _ board = board
 gameIsOver :: Board -> (String, Winner)
 gameIsOver board
   -- поиск победителя по диагоналям
-  | (fst diagonal  == boardSize) || (snd diagonal  == boardSize) = returnWinner (diagonal , diagonal)  "diag"
-  | (fst diagonal' == boardSize) || (snd diagonal' == boardSize) = returnWinner (diagonal', diagonal') "diag'"
+  | (fst diagonal  == boardSize) || (snd diagonal  == boardSize) = returnWinner (diagonal , diagonal)  "Победа по диагонали"
+  | (fst diagonal' == boardSize) || (snd diagonal' == boardSize) = returnWinner (diagonal', diagonal') "Победа по обр. диагонали"
 
   -- поиск победителя по вертикалям
-  | verticalX || verticalO = returnWinner (verticalX, verticalO) "vert"
+  | verticalX || verticalO = returnWinner (verticalX, verticalO) "Победитель по вертикали"
 
   -- поиск по горизонталям
-  | horizontalX || horizontalO = returnWinner (horizontalX, horizontalO ) "hor"
+  | horizontalX || horizontalO = returnWinner (horizontalX, horizontalO ) "Победитель по горизонтали"
 
   -- если победа ненайдена
-  | otherwise = ("diag", Nothing)
+  | otherwise = ("Победитель не выявлен", Nothing)
   where
     diagonal  = itemSum $ map (\(i, j) -> board !! i !! j) $ zip [0..boardSize - 1] [0..boardSize - 1]
     diagonal' = itemSum $ map (\(i, j) -> board !! i !! j) $ zip [0..boardSize - 1] (reverse [0..boardSize - 1])
@@ -105,7 +106,7 @@ main :: IO ()
 main =
   play display bgColor fps initWorld renderWorld handleWorld updateWorld
   where
-    display = InWindow "QQ" winSize winOffset
+    display = InWindow "Tic-Tac-Toe" winSize winOffset
     bgColor = white
     fps = 60
     winSize = (180, 180)
